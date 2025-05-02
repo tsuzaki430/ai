@@ -8,7 +8,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "pnpm clean && tsup --tsconfig tsconfig.build.json",
+    "build": "tsup --tsconfig tsconfig.build.json",
     "clean": "rm -rf dist *.tsbuildinfo",
     "dev": "tsup --watch",
     "lint": "eslint \"./**/*.ts*\"",
