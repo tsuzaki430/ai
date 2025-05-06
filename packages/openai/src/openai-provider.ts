@@ -32,14 +32,14 @@ import { OpenAISpeechModelId } from './openai-speech-options';
 
 export interface OpenAIProvider extends ProviderV2 {
   (modelId: 'gpt-3.5-turbo-instruct'): OpenAICompletionLanguageModel;
-  (modelId: OpenAIChatModelId): LanguageModelV2;
+  (modelId: OpenAIResponsesModelId): LanguageModelV2;
 
   /**
 Creates an OpenAI model for text generation.
    */
-  languageModel(
-    modelId: 'gpt-3.5-turbo-instruct',
-  ): OpenAICompletionLanguageModel;
+languageModel(
+  modelId: 'gpt-3.5-turbo-instruct',
+): OpenAICompletionLanguageModel;
   languageModel(modelId: OpenAIChatModelId): LanguageModelV2;
 
   /**
@@ -229,9 +229,7 @@ export function createOpenAI(
       fetch: options.fetch,
     });
 
-  const createLanguageModel = (
-    modelId: OpenAIChatModelId | OpenAICompletionModelId,
-  ) => {
+  const createLanguageModel = (modelId: OpenAIResponsesModelId | OpenAICompletionModelId) => {
     if (new.target) {
       throw new Error(
         'The OpenAI model function cannot be called with the new keyword.',
@@ -242,7 +240,7 @@ export function createOpenAI(
       return createCompletionModel(modelId);
     }
 
-    return createChatModel(modelId);
+    return createResponsesModel(modelId);
   };
 
   const createResponsesModel = (modelId: OpenAIResponsesModelId) => {
@@ -254,9 +252,7 @@ export function createOpenAI(
     });
   };
 
-  const provider = function (
-    modelId: OpenAIChatModelId | OpenAICompletionModelId,
-  ) {
+  const provider = function (modelId: OpenAIResponsesModelId) {
     return createLanguageModel(modelId);
   };
 
