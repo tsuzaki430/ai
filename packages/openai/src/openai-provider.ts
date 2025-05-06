@@ -37,9 +37,9 @@ export interface OpenAIProvider extends ProviderV2 {
   /**
 Creates an OpenAI model for text generation.
    */
-languageModel(
-  modelId: 'gpt-3.5-turbo-instruct',
-): OpenAICompletionLanguageModel;
+  languageModel(
+    modelId: 'gpt-3.5-turbo-instruct',
+  ): OpenAICompletionLanguageModel;
   languageModel(modelId: OpenAIChatModelId): LanguageModelV2;
 
   /**
@@ -229,7 +229,9 @@ export function createOpenAI(
       fetch: options.fetch,
     });
 
-  const createLanguageModel = (modelId: OpenAIResponsesModelId | OpenAICompletionModelId) => {
+  const createLanguageModel = (
+    modelId: OpenAIResponsesModelId | OpenAICompletionModelId,
+  ) => {
     if (new.target) {
       throw new Error(
         'The OpenAI model function cannot be called with the new keyword.',
