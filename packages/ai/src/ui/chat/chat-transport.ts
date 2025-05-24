@@ -1,7 +1,7 @@
 import { FetchFunction } from '@ai-sdk/provider-utils';
-import { UIMessageStreamPart } from '../ui-message-stream';
-import { fetchTextStream, fetchUIMessageStream } from './call-chat-api';
-import { UIDataTypes, UIMessage } from './ui-messages';
+import { UIMessageStreamPart } from '../../ui-message-stream';
+import { fetchTextStream, fetchUIMessageStream } from '../call-chat-api';
+import { UIDataTypes, UIMessage } from '../ui-messages';
 
 export interface ChatTransport<
   MESSAGE_METADATA,

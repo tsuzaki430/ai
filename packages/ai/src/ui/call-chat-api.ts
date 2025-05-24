@@ -16,7 +16,7 @@ import {
 } from './process-ui-message-stream';
 import { transformTextToUiMessageStream } from './transform-text-to-ui-message-stream';
 import { UIMessage } from './ui-messages';
-import { UseChatOptions } from './use-chat';
+import { CoreChatOptions } from './use-chat';
 
 // use function to allow for mocking in tests:
 const getOriginalFetch = () => fetch;
@@ -150,8 +150,8 @@ export async function consumeUIMessageStream<MESSAGE_METADATA>({
 }: {
   stream: ReadableStream<UIMessageStreamPart>;
   onUpdate: (options: { message: UIMessage<MESSAGE_METADATA> }) => void;
-  onFinish: UseChatOptions<MESSAGE_METADATA>['onFinish'];
-  onToolCall: UseChatOptions<MESSAGE_METADATA>['onToolCall'];
+  onFinish: CoreChatOptions<MESSAGE_METADATA>['onFinish'];
+  onToolCall: CoreChatOptions<MESSAGE_METADATA>['onToolCall'];
   generateId: IdGenerator;
   lastMessage: UIMessage<MESSAGE_METADATA> | undefined;
   messageMetadataSchema?: Schema<MESSAGE_METADATA>;
@@ -213,8 +213,8 @@ export async function callChatApi<MESSAGE_METADATA>({
   headers: HeadersInit | undefined;
   abortController: (() => AbortController | null) | undefined;
   onUpdate: (options: { message: UIMessage<MESSAGE_METADATA> }) => void;
-  onFinish: UseChatOptions<MESSAGE_METADATA>['onFinish'];
-  onToolCall: UseChatOptions<MESSAGE_METADATA>['onToolCall'];
+  onFinish: CoreChatOptions<MESSAGE_METADATA>['onFinish'];
+  onToolCall: CoreChatOptions<MESSAGE_METADATA>['onToolCall'];
   generateId: IdGenerator;
   fetch: ReturnType<typeof getOriginalFetch> | undefined;
   lastMessage: UIMessage<MESSAGE_METADATA> | undefined;

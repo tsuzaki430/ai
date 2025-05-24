@@ -5,7 +5,7 @@ import type {
   JSONValue,
   OriginalUseChatOptions,
   UIMessage,
-  UseChatOptions,
+  CoreChatOptions,
 } from 'ai';
 import {
   callChatApi,
@@ -21,7 +21,7 @@ import swrv from 'swrv';
 import type { Ref } from 'vue';
 import { ref, unref } from 'vue';
 
-export type { CreateUIMessage, UIMessage, UseChatOptions };
+export type { CreateUIMessage, UIMessage, CoreChatOptions };
 
 export type UseChatHelpers<MESSAGE_METADATA> = {
   /** Current messages in the chat */

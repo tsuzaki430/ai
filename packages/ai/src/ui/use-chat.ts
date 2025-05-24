@@ -1,11 +1,11 @@
 import {
-  FetchFunction,
-  IdGenerator,
-  Schema,
-  ToolCall,
+  type FetchFunction,
+  type IdGenerator,
+  type Schema,
+  type ToolCall,
 } from '@ai-sdk/provider-utils';
-import { ChatStore, InferUIDataParts, UIDataPartSchemas } from './chat-store';
-import { UIMessage } from './ui-messages';
+import { type UIMessage } from './ui-messages';
+import { type InferUIDataParts, type UIDataPartSchemas } from './chat/types';
 
 export type ChatRequestOptions = {
   /**
@@ -19,14 +19,12 @@ export type ChatRequestOptions = {
   body?: object;
 };
 
-export type UseChatOptions<
+export type CoreChatOptions<
   MESSAGE_METADATA = unknown,
-  DATA_TYPE_SCHEMAS extends UIDataPartSchemas = UIDataPartSchemas,
+  UI_DATA_PART_SCHEMAS extends UIDataPartSchemas = UIDataPartSchemas,
 > = {
   /**
-   * A unique identifier for the chat. If not provided, a random one will be
-   * generated. When provided, the `useChat` hook with the same `id` will
-   * have shared states across components.
+   * A unique ID for this chat. If not provided, a random ID will be generated.
    */
   chatId?: string;
 
@@ -36,12 +34,12 @@ export type UseChatOptions<
   initialInput?: string;
 
   /**
-  Optional callback function that is invoked when a tool call is received.
-  Intended for automatic client-side tool execution.
-
-  You can optionally return a result for the tool call,
-  either synchronously or asynchronously.
-     */
+   * Optional callback function that is invoked when a tool call is received.
+   * Intended for automatic client-side tool execution.
+   *
+   * You can optionally return a result for the tool call,
+   * either synchronously or asynchronously.
+   */
   onToolCall?: ({
     toolCall,
   }: {
@@ -54,7 +52,10 @@ export type UseChatOptions<
    * @param message The message that was streamed.
    */
   onFinish?: (options: {
-    message: UIMessage<MESSAGE_METADATA, InferUIDataParts<DATA_TYPE_SCHEMAS>>;
+    message: UIMessage<
+      MESSAGE_METADATA,
+      InferUIDataParts<UI_DATA_PART_SCHEMAS>
+    >;
   }) => void;
 
   /**
@@ -67,11 +68,6 @@ export type UseChatOptions<
    * If not provided the default AI SDK `generateId` is used.
    */
   generateId?: IdGenerator;
-
-  /**
-   * Optional chat store. Default is used when not provided.
-   */
-  chatStore?: ChatStore<MESSAGE_METADATA, DATA_TYPE_SCHEMAS>;
 };
 
 export type OriginalUseChatOptions<MESSAGE_METADATA = unknown> = {

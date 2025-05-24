@@ -1,41 +1,136 @@
+import type { StandardSchemaV1, Validator } from '@ai-sdk/provider-utils';
 import {
-  ChatStore,
   convertFileListToFileUIParts,
   generateId,
+  SerialJobExecutor,
+  type ActiveResponse,
   type ChatRequestOptions,
+  type ChatState,
   type ChatStatus,
   type CreateUIMessage,
   type IdGenerator,
-  type InferUIDataTypes,
-  type UIDataTypesSchemas,
+  type InferUIDataParts,
+  type UIDataTypes,
   type UIMessage,
-  type UseChatOptions,
+  type UIDataPartSchemas,
+  ChatClient,
+  DefaultChatTransport,
+  type CoreChatOptions,
+  type ChatTransport,
 } from 'ai';
-import {
-  defaultChatStore,
-  getChatStoreContext,
-  hasChatStoreContext,
-} from './chat-store.svelte.js';
+
+class SvelteChatState<MESSAGE_METADATA, DATA_TYPES extends UIDataTypes>
+  implements ChatState<MESSAGE_METADATA, DATA_TYPES>
+{
+  readonly id: string;
+  messages: UIMessage<MESSAGE_METADATA, DATA_TYPES>[];
+  status = $state<ChatStatus>('ready');
+  error = $state<Error | undefined>(undefined);
+  activeResponse: ActiveResponse<MESSAGE_METADATA> | undefined = undefined;
+  jobExecutor = new SerialJobExecutor();
+
+  constructor(
+    id: string,
+    messages?: UIMessage<MESSAGE_METADATA, DATA_TYPES>[],
+  ) {
+    this.id = id;
+    this.messages = $state(messages ?? []);
+  }
+
+  setStatus = (status: ChatStatus, error?: Error) => {
+    this.status = status;
+    this.error = error;
+  };
+
+  setActiveResponse = (
+    activeResponse: ActiveResponse<MESSAGE_METADATA> | undefined,
+  ) => {
+    this.activeResponse = activeResponse;
+  };
+
+  setMessages = (messages: UIMessage<MESSAGE_METADATA, DATA_TYPES>[]) => {
+    this.messages = messages;
+  };
+
+  pushMessage = (message: UIMessage<MESSAGE_METADATA, DATA_TYPES>) => {
+    this.messages.push(message);
+  };
+
+  popMessage = () => {
+    this.messages.pop();
+  };
+
+  replaceMessage = (
+    index: number,
+    message: UIMessage<MESSAGE_METADATA, DATA_TYPES>,
+  ) => {
+    this.messages[index] = message;
+  };
+}
 
 export type ChatOptions<
   MESSAGE_METADATA = unknown,
-  DATA_TYPE_SCHEMAS extends UIDataTypesSchemas = UIDataTypesSchemas,
-> = Readonly<UseChatOptions<MESSAGE_METADATA, DATA_TYPE_SCHEMAS>>;
+  UI_DATA_PART_SCHEMAS extends UIDataPartSchemas = UIDataPartSchemas,
+> = Omit<
+  CoreChatOptions<MESSAGE_METADATA, UI_DATA_PART_SCHEMAS>,
+  'chatId' | 'initialInput'
+> & {
+  /**
+   * A unique ID for this chat. If not provided, a random ID will be generated.
+   */
+  id?: string;
+
+  /**
+   * Initial input of the chat.
+   */
+  input?: string;
+
+  /**
+   * Initial messages of the chat. Useful to load an existing chat history.
+   */
+  messages?: UIMessage<
+    NoInfer<MESSAGE_METADATA>,
+    InferUIDataParts<UI_DATA_PART_SCHEMAS>
+  >[];
+
+  transport?: ChatTransport<
+    MESSAGE_METADATA,
+    InferUIDataParts<UI_DATA_PART_SCHEMAS>
+  >;
+
+  maxSteps?: number;
+
+  messageMetadataSchema?:
+    | Validator<MESSAGE_METADATA>
+    | StandardSchemaV1<MESSAGE_METADATA>;
+
+  dataPartSchemas?: UI_DATA_PART_SCHEMAS;
+};
 
 export type { CreateUIMessage, UIMessage };
 
 export class Chat<
   MESSAGE_METADATA = unknown,
-  UI_DATA_PART_SCHEMAS extends UIDataTypesSchemas = UIDataTypesSchemas,
+  UI_DATA_PART_SCHEMAS extends UIDataPartSchemas = UIDataPartSchemas,
 > {
-  readonly #options: ChatOptions<MESSAGE_METADATA, UI_DATA_PART_SCHEMAS>;
+  readonly #options: Omit<
+    ChatOptions<MESSAGE_METADATA, UI_DATA_PART_SCHEMAS>,
+    'generateId'
+  >;
   readonly #generateId: IdGenerator;
-  readonly #chatStore: ChatStore<MESSAGE_METADATA, UI_DATA_PART_SCHEMAS>;
+  readonly #chatState: SvelteChatState<
+    MESSAGE_METADATA,
+    InferUIDataParts<UI_DATA_PART_SCHEMAS>
+  >;
+  readonly #chatClient: ChatClient<MESSAGE_METADATA, UI_DATA_PART_SCHEMAS>;
+
   /**
    * The id of the chat. If not provided through the constructor, a random ID will be generated
    * using the provided `generateId` function, or a built-in function if not provided.
    */
-  readonly chatId: string;
+  get id(): string {
+    return this.#chatState.id;
+  }
 
   /** The current value of the input. Writable, so it can be bound to form inputs. */
   input = $state<string>('');
@@ -43,22 +138,23 @@ export class Chat<
   /**
    * Current messages in the chat.
    *
-   * This is writable, which is useful when you want to edit the messages on the client, and then
+   * This is writable (both through assignment and array update methods, like `.push`),
+   * which is useful when you want to edit the messages on the client, and then
    * trigger {@link reload} to regenerate the AI response.
    */
   get messages(): UIMessage<
     MESSAGE_METADATA,
-    InferUIDataTypes<UI_DATA_PART_SCHEMAS>
+    InferUIDataParts<UI_DATA_PART_SCHEMAS>
   >[] {
-    return this.#chatStore.getMessages(this.chatId);
+    return this.#chatState.messages;
   }
   set messages(
     messages: UIMessage<
       MESSAGE_METADATA,
-      InferUIDataTypes<UI_DATA_PART_SCHEMAS>
+      InferUIDataParts<UI_DATA_PART_SCHEMAS>
     >[],
   ) {
-    this.#chatStore.setMessages({ id: this.chatId, messages });
+    this.#chatState.setMessages(messages);
   }
 
   /**
@@ -70,57 +166,32 @@ export class Chat<
    * - `error`: An error occurred during the API request, preventing successful completion.
    */
   get status(): ChatStatus {
-    return this.#chatStore.getStatus(this.chatId);
-  }
-  set status(value: ChatStatus) {
-    this.#chatStore.setStatus({ id: this.chatId, status: value });
+    return this.#chatState.status;
   }
 
   /** The error object of the API request */
   get error(): Error | undefined {
-    return this.#chatStore.getError(this.chatId);
-  }
-  set error(value: Error | undefined) {
-    this.#chatStore.setStatus({
-      id: this.chatId,
-      status: 'error',
-      error: value,
-    });
+    return this.#chatState.error;
   }
 
   constructor(
-    options: () => ChatOptions<
-      MESSAGE_METADATA,
-      UI_DATA_PART_SCHEMAS
-    > = () => ({}),
+    options: ChatOptions<MESSAGE_METADATA, UI_DATA_PART_SCHEMAS> = {},
   ) {
-    this.#options = $derived.by(options);
-    this.#generateId = $derived(this.#options.generateId ?? generateId);
-    this.chatId = $derived(this.#options.chatId ?? this.#generateId());
-
-    if (this.#options.chatStore) {
-      this.#chatStore = this.#options.chatStore;
-    } else if (hasChatStoreContext()) {
-      this.#chatStore = getChatStoreContext() as ChatStore<
-        MESSAGE_METADATA,
-        UI_DATA_PART_SCHEMAS
-      >;
-    } else {
-      this.#chatStore = defaultChatStore<
-        MESSAGE_METADATA,
-        UI_DATA_PART_SCHEMAS
-      >({
-        api: '/api/chat',
-        generateId: this.#options.generateId || generateId,
-      });
-    }
-
-    this.input = this.#options.initialInput ?? '';
-
-    if (!this.#chatStore.hasChat(this.chatId)) {
-      const messages = $state([]);
-      this.#chatStore.addChat(this.chatId, messages);
-    }
+    this.#options = options;
+    this.#generateId = options.generateId ?? generateId;
+    this.#chatState = new SvelteChatState(
+      options.id ?? this.#generateId(),
+      options.messages,
+    );
+    this.#chatClient = new ChatClient(this.#chatState, {
+      ...options,
+      generateId: this.#generateId,
+      transport:
+        options.transport ??
+        new DefaultChatTransport({
+          api: '/api/chat',
+        }),
+    });
   }
 
   /**
@@ -131,15 +202,14 @@ export class Chat<
    */
   append = async (
     message:
-      | UIMessage<MESSAGE_METADATA, InferUIDataTypes<UI_DATA_PART_SCHEMAS>>
+      | UIMessage<MESSAGE_METADATA, InferUIDataParts<UI_DATA_PART_SCHEMAS>>
       | CreateUIMessage<
           MESSAGE_METADATA,
-          InferUIDataTypes<UI_DATA_PART_SCHEMAS>
+          InferUIDataParts<UI_DATA_PART_SCHEMAS>
         >,
     { headers, body }: ChatRequestOptions = {},
   ) => {
-    await this.#chatStore.submitMessage({
-      chatId: this.chatId,
+    await this.#chatClient.submitMessage({
       message,
       headers,
       body,
@@ -155,8 +225,7 @@ export class Chat<
    * new response.
    */
   reload = async ({ headers, body }: ChatRequestOptions = {}) => {
-    await this.#chatStore.resubmitLastUserMessage({
-      chatId: this.chatId,
+    await this.#chatClient.resubmitLastUserMessage({
       headers,
       body,
       onError: this.#options.onError,
@@ -169,7 +238,7 @@ export class Chat<
    * Abort the current request immediately, keep the generated tokens if any.
    */
   stop = () => {
-    this.#chatStore.stopStream({ chatId: this.chatId });
+    this.#chatClient.stopStream();
   };
 
   /** Form submission handler to automatically reset input and append a user message */
@@ -208,8 +277,7 @@ export class Chat<
     toolCallId: string;
     result: unknown;
   }) => {
-    await this.#chatStore.addToolResult({
-      chatId: this.chatId,
+    await this.#chatClient.addToolResult({
       toolCallId,
       result,
     });

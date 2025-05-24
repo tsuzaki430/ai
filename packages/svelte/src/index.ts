@@ -13,5 +13,3 @@ export {
 export { Completion, type CompletionOptions } from './completion.svelte.js';
 
 export { createAIContext } from './context-provider.js';
-
-export { defaultChatStore, SvelteChatStore } from './chat-store.svelte.js';

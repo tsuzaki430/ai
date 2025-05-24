@@ -9,7 +9,6 @@ import {
 } from '../ui-message-stream/ui-message-stream-parts';
 import { mergeObjects } from '../util/merge-objects';
 import { parsePartialJson } from '../util/parse-partial-json';
-import { InferUIDataParts, UIDataPartSchemas } from './chat-store';
 import { extractMaxToolInvocationStep } from './extract-max-tool-invocation-step';
 import { getToolInvocations } from './get-tool-invocations';
 import type {
@@ -20,7 +19,8 @@ import type {
   UIMessage,
   UIMessagePart,
 } from './ui-messages';
-import { UseChatOptions } from './use-chat';
+import { CoreChatOptions } from './use-chat';
+import { InferUIDataParts, UIDataPartSchemas } from './chat/types';
 
 export type StreamingUIMessageState<
   MESSAGE_METADATA = unknown,
@@ -91,7 +91,7 @@ export function processUIMessageStream<
     | Validator<MESSAGE_METADATA>
     | StandardSchemaV1<MESSAGE_METADATA>;
   dataPartSchemas?: UI_DATA_PART_SCHEMAS;
-  onToolCall?: UseChatOptions['onToolCall'];
+  onToolCall?: CoreChatOptions['onToolCall'];
   runUpdateMessageJob: (
     job: (options: {
       state: StreamingUIMessageState<
