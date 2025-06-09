@@ -1,5 +1,11 @@
 # @ai-sdk/amazon-bedrock
 
+## 3.0.0-alpha.11
+
+### Patch Changes
+
+- d546725: fix(provider/amazon-bedrock): use consistent document names for prompt cache effectiveness
+
 ## 3.0.0-alpha.10
 
 ### Patch Changes

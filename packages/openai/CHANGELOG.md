@@ -1,5 +1,11 @@
 # @ai-sdk/openai
 
+## 2.0.0-alpha.11
+
+### Patch Changes
+
+- 8d12da5: feat(provider/openai): add serviceTier option for flex processing
+
 ## 2.0.0-alpha.10
 
 ### Patch Changes
