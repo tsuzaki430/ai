@@ -1,5 +1,34 @@
 # @ai-sdk/gateway
 
+## 1.0.13
+
+### Patch Changes
+
+- c9994f9: feat(provider/gateway): Add cache pricing fields to model metadata
+- Updated dependencies [1b5a3d3]
+  - @ai-sdk/provider-utils@3.0.6
+
+## 1.0.12
+
+### Patch Changes
+
+- 50e2029: feat (provider/gateway): add deepseek v3.1 thinking model id
+- b8478f0: feat (provider/gateway): add mistral medium model id
+
+## 1.0.11
+
+### Patch Changes
+
+- 926259f: feat(provider/gateway): Expose model type in model spec
+- c000f96: feat(provider/gateway): Add DeepSeek V3.1
+
+## 1.0.10
+
+### Patch Changes
+
+- Updated dependencies [0857788]
+  - @ai-sdk/provider-utils@3.0.5
+
 ## 1.0.9
 
 ### Patch Changes
