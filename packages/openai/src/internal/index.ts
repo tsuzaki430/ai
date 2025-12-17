@@ -16,3 +16,4 @@ export * from '../tool/code-interpreter';
 export * from '../tool/file-search';
 export * from '../tool/image-generation';
 export * from '../tool/web-search-preview';
+export * from '../tool/mcp';
