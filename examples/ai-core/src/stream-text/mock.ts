@@ -1,8 +1,8 @@
 import { streamText } from 'ai';
 import { convertArrayToReadableStream, MockLanguageModelV3 } from 'ai/test';
-import 'dotenv/config';
+import { run } from '../lib/run';
 
-async function main() {
+run(async () => {
   const result = streamText({
     model: new MockLanguageModelV3({
       doStream: async () => ({
@@ -14,7 +14,7 @@ async function main() {
           { type: 'text-end', id: '0' },
           {
             type: 'finish',
-            finishReason: 'stop',
+            finishReason: { raw: undefined, unified: 'stop' },
             logprobs: undefined,
             usage: {
               inputTokens: {
@@ -43,6 +43,4 @@ async function main() {
   console.log();
   console.log('Token usage:', await result.usage);
   console.log('Finish reason:', await result.finishReason);
-}
-
-main().catch(console.error);
+});

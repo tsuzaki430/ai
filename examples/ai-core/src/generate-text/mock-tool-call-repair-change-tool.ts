@@ -1,9 +1,9 @@
 import { generateText, tool } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
-import 'dotenv/config';
 import { z } from 'zod';
+import { run } from '../lib/run';
 
-async function main() {
+run(async () => {
   const result = await generateText({
     model: new MockLanguageModelV3({
       doGenerate: async () => ({
@@ -21,7 +21,7 @@ async function main() {
             reasoning: undefined,
           },
         },
-        finishReason: 'tool-calls',
+        finishReason: { raw: undefined, unified: 'tool-calls' },
         content: [
           {
             type: 'tool-call',
@@ -55,6 +55,4 @@ async function main() {
 
   console.log('Repaired tool calls:');
   console.log(JSON.stringify(result.toolCalls, null, 2));
-}
-
-main().catch(console.error);
+});

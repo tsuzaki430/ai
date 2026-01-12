@@ -629,9 +629,8 @@ console.log('Sources:', await result.sources);
 
 <Note>
   The table above lists popular models. Please see the [xAI
-  docs](https://docs.x.ai/docs#models) for a full list of available models. The
-  table above lists popular models. You can also pass any available provider
-  model ID as a string if needed.
+  docs](https://docs.x.ai/docs#models) for a full list of available models. You
+  can also pass any available provider model ID as a string if needed.
 </Note>
 
 ## Image Models
@@ -640,7 +639,7 @@ You can create xAI image models using the `.image()` factory method. For more on
 
 ```ts
 import { xai } from '@ai-sdk/xai';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 
 const { image } = await generateImage({
   model: xai.image('grok-2-image'),
@@ -659,7 +658,7 @@ You can customize the image generation behavior with model-specific settings:
 
 ```ts
 import { xai } from '@ai-sdk/xai';
-import { experimental_generateImage as generateImage } from 'ai';
+import { generateImage } from 'ai';
 
 const { images } = await generateImage({
   model: xai.image('grok-2-image'),

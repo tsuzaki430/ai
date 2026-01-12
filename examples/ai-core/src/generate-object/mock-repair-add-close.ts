@@ -1,9 +1,9 @@
 import { generateObject, JSONParseError } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
-import 'dotenv/config';
 import { z } from 'zod';
+import { run } from '../lib/run';
 
-async function main() {
+run(async () => {
   const result = await generateObject({
     model: new MockLanguageModelV3({
       doGenerate: async () => ({
@@ -21,7 +21,7 @@ async function main() {
           },
         },
         warnings: [],
-        finishReason: 'tool-calls',
+        finishReason: { raw: undefined, unified: 'tool-calls' },
         content: [
           { type: 'text', text: `{ "content": "provider metadata test"` },
         ],
@@ -39,6 +39,4 @@ async function main() {
 
   console.log('Object after repair:');
   console.log(result.object);
-}
-
-main().catch(console.error);
+});

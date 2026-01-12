@@ -2,11 +2,11 @@ import {
   GoogleVertexImageProviderOptions,
   vertex,
 } from '@ai-sdk/google-vertex';
-import { experimental_generateImage as generateImage } from 'ai';
-import 'dotenv/config';
+import { generateImage } from 'ai';
 import { presentImages } from '../lib/present-image';
+import { run } from '../lib/run';
 
-async function main() {
+run(async () => {
   const result = await generateImage({
     model: vertex.image('imagen-4.0-generate-001'),
     prompt: 'A burrito launched through a tunnel',
@@ -24,6 +24,4 @@ async function main() {
     'Provider metadata:',
     JSON.stringify(result.providerMetadata, null, 2),
   );
-}
-
-main().catch(console.error);
+});
