@@ -162,6 +162,9 @@ importers:
       ai:
         specifier: workspace:*
         version: link:../../packages/ai
+      ai-sdk-openai-websocket-fetch:
+        specifier: ^1.0.0
+        version: 1.0.0(@ai-sdk/openai@packages+openai)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -11443,6 +11446,15 @@ packages:
   aggregate-error@4.0.1:
     resolution: {integrity: sha512-0poP0T7el6Vq3rstR8Mn4V/IQrpBLO6POkUSrN7RhyY+GF/InCFShQzsQ39T25gkHhLgSLByyAz+Kjb+c2L98w==}
     engines: {node: '>=12'}
+
+  ai-sdk-openai-websocket-fetch@1.0.0:
+    resolution: {integrity: sha512-u3lfucj9IAowBlL5nMb0raLk8B+1oYYqmyqEUC6rPGrsoVV/INpiS7yRrj1crhxZxqda2FNltfrmibCYvKOBbQ==}
+    deprecated: This package has moved to @vercel/ai-sdk-openai-websocket-fetch. Please update your dependencies.
+    peerDependencies:
+      '@ai-sdk/openai': '>=3'
+    peerDependenciesMeta:
+      '@ai-sdk/openai':
+        optional: true
 
   ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
@@ -30069,6 +30081,15 @@ snapshots:
     dependencies:
       clean-stack: 4.2.0
       indent-string: 5.0.0
+
+  ai-sdk-openai-websocket-fetch@1.0.0(@ai-sdk/openai@packages+openai):
+    dependencies:
+      ws: 8.20.1
+    optionalDependencies:
+      '@ai-sdk/openai': link:packages/openai
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   ajv-formats@2.1.1(ajv@8.12.0):
     optionalDependencies:
